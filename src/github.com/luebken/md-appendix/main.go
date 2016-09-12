@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"path/filepath"
 	"strings"
 
 	"os"
 
-	_ "github.com/russross/blackfriday"
+	"github.com/russross/blackfriday"
 )
 
 func main() {
@@ -29,5 +31,13 @@ func main() {
 
 	for _, file := range fileList {
 		fmt.Println(file)
+		file, err := ioutil.ReadFile(file) // For read access.
+		if err != nil {
+			log.Fatal(err)
+		}
+		output := blackfriday.MarkdownCommon(file)
+
+		fmt.Println(string(output))
+
 	}
 }
