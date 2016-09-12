@@ -1,16 +1,20 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"os"
-
-	"github.com/russross/blackfriday"
 )
+
+type Link struct {
+	Description string
+	URL         string
+	Header1     string
+}
 
 func main() {
 	argsWithoutProg := os.Args[1:]
@@ -29,15 +33,34 @@ func main() {
 		return nil
 	})
 
+	links := []Link{}
+
 	for _, file := range fileList {
-		fmt.Println(file)
-		file, err := ioutil.ReadFile(file) // For read access.
-		if err != nil {
-			log.Fatal(err)
+		fileHandle, _ := os.Open(file)
+		defer fileHandle.Close()
+		fileScanner := bufio.NewScanner(fileHandle)
+
+		currentHeader := ""
+		for fileScanner.Scan() {
+			line := fileScanner.Text()
+
+			regexHeader, _ := regexp.Compile("\\#\\s*(.*)")
+			regexLink, _ := regexp.Compile("\\[(.*)\\]\\((.*)\\)")
+			if regexHeader.MatchString(line) {
+				currentHeader = regexHeader.FindStringSubmatch(line)[1]
+			}
+			if regexLink.MatchString(line) {
+				find := regexLink.FindStringSubmatch(line)
+				links = append(links, Link{find[1], find[2], currentHeader})
+			}
 		}
-		output := blackfriday.MarkdownCommon(file)
-
-		fmt.Println(string(output))
-
 	}
+
+	// output
+	for _, link := range links {
+		fmt.Println("Header:" + link.Header1)
+		fmt.Println("Description:" + link.Description)
+		fmt.Println("URL:" + link.URL)
+	}
+
 }
