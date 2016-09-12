@@ -73,7 +73,14 @@ func main() {
 	fmt.Println("------------------ >8 ------------------\n")
 	fmt.Println("# Links:\n")
 	for header, links := range sections {
-		fmt.Println(header)
+		headers := strings.Split(header, "::")
+		fmt.Println("## In '" + headers[0] + "'")
+
+		if headers[1] != "" {
+			fmt.Println("### In '" + headers[1] + "'")
+
+		}
+
 		for _, link := range links {
 			fmt.Println("* [" + link.Description + "](" + link.URL + ")")
 
