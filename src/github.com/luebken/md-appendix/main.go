@@ -45,7 +45,7 @@ func main() {
 			line := fileScanner.Text()
 
 			regexHeader, _ := regexp.Compile("\\#\\s*(.*)")
-			regexLink, _ := regexp.Compile("\\[(.*)\\]\\((.*)\\)")
+			regexLink, _ := regexp.Compile("\\[(.*)\\]\\((http.*)\\)")
 			if regexHeader.MatchString(line) {
 				currentHeader = regexHeader.FindStringSubmatch(line)[1]
 			}
@@ -57,10 +57,20 @@ func main() {
 	}
 
 	// output
+	sections := make(map[string][]Link)
 	for _, link := range links {
-		fmt.Println("Header:" + link.Header1)
-		fmt.Println("Description:" + link.Description)
-		fmt.Println("URL:" + link.URL)
+		sections[link.Header1] = append(sections[link.Header1], link)
 	}
+
+	fmt.Println("------------------ >8 ------------------\n")
+	fmt.Println("# Links:\n")
+	for header, links := range sections {
+		fmt.Println(header)
+		for _, link := range links {
+			fmt.Println("* [" + link.Description + "](" + link.URL + ")")
+
+		}
+	}
+	fmt.Println("\n------------------ 8< ------------------")
 
 }
