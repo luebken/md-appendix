@@ -14,6 +14,7 @@ type Link struct {
 	Description string
 	URL         string
 	Header1     string
+	Header2     string
 }
 
 func main() {
@@ -41,17 +42,23 @@ func main() {
 		fileScanner := bufio.NewScanner(fileHandle)
 
 		currentHeader := ""
+		currentSubHeader := ""
 		for fileScanner.Scan() {
 			line := fileScanner.Text()
 
-			regexHeader, _ := regexp.Compile("\\#\\s*(.*)")
-			regexLink, _ := regexp.Compile("\\[(.*)\\]\\((http.*)\\)")
-			if regexHeader.MatchString(line) {
+			regexSubHeader, _ := regexp.Compile("^\\#\\#\\s*(.*)")
+			regexHeader, _ := regexp.Compile("^\\#\\s*(.*)")
+			if regexSubHeader.MatchString(line) {
+				currentSubHeader = regexSubHeader.FindStringSubmatch(line)[1]
+			} else if regexHeader.MatchString(line) {
 				currentHeader = regexHeader.FindStringSubmatch(line)[1]
+				currentSubHeader = ""
 			}
+
+			regexLink, _ := regexp.Compile("\\[(.*)\\]\\((http.*)\\)")
 			if regexLink.MatchString(line) {
 				find := regexLink.FindStringSubmatch(line)
-				links = append(links, Link{find[1], find[2], currentHeader})
+				links = append(links, Link{find[1], find[2], currentHeader, currentSubHeader})
 			}
 		}
 	}
@@ -59,7 +66,8 @@ func main() {
 	// output
 	sections := make(map[string][]Link)
 	for _, link := range links {
-		sections[link.Header1] = append(sections[link.Header1], link)
+		headerString := link.Header1 + "::" + link.Header2
+		sections[headerString] = append(sections[headerString], link)
 	}
 
 	fmt.Println("------------------ >8 ------------------\n")
